@@ -34,6 +34,7 @@ import { configureReanimatedLogger } from 'react-native-reanimated'
 import { Provider } from 'react-redux'
 import { BrowserRouter, HashRouter, useLocation } from 'react-router'
 import store from 'state'
+import { SmartPoolContextProvider } from 'state/smartPool'
 import { ThemedGlobalStyle, ThemeProvider } from 'theme'
 import { TamaguiProvider } from 'theme/tamaguiProvider'
 import { PortalProvider } from 'ui/src'
@@ -193,22 +194,24 @@ const RootApp = (): JSX.Element => {
                             <ConnectWalletMutationProvider>
                               <WebAccountsStoreProvider>
                                 <WebUniswapProvider>
-                                  <GraphqlProviders>
-                                    <LocalizationContextProvider>
-                                      <BlockNumberProvider>
-                                        <Updaters />
-                                        <ThemeProvider>
-                                          <TamaguiProvider>
-                                            <PortalProvider>
-                                              <WebNotificationServiceManager />
-                                              <ThemedGlobalStyle />
-                                              <App />
-                                            </PortalProvider>
-                                          </TamaguiProvider>
-                                        </ThemeProvider>
-                                      </BlockNumberProvider>
-                                    </LocalizationContextProvider>
-                                  </GraphqlProviders>
+                                  <SmartPoolContextProvider>
+                                    <GraphqlProviders>
+                                      <LocalizationContextProvider>
+                                        <BlockNumberProvider>
+                                          <Updaters />
+                                          <ThemeProvider>
+                                            <TamaguiProvider>
+                                              <PortalProvider>
+                                                <WebNotificationServiceManager />
+                                                <ThemedGlobalStyle />
+                                                <App />
+                                              </PortalProvider>
+                                            </TamaguiProvider>
+                                          </ThemeProvider>
+                                        </BlockNumberProvider>
+                                      </LocalizationContextProvider>
+                                    </GraphqlProviders>
+                                  </SmartPoolContextProvider>
                                 </WebUniswapProvider>
                               </WebAccountsStoreProvider>
                             </ConnectWalletMutationProvider>
