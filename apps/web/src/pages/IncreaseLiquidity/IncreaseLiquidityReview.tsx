@@ -14,6 +14,7 @@ import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { liquiditySaga } from 'state/sagas/liquidity/liquiditySaga'
+import { useActiveSmartPool } from 'state/smartPool'
 import { Button, Flex, Separator, Text } from 'ui/src'
 import { Passkey } from 'ui/src/components/icons/Passkey'
 import { iconSizes } from 'ui/src/theme'
@@ -41,6 +42,7 @@ export function IncreaseLiquidityReview({ onClose }: { onClose: () => void }) {
   const trace = useTrace()
   const { needsPasskeySignin } = useGetPasskeyAuthStatus(connectedAccount.connector?.id)
   const disableOneClickSwap = useSetOverrideOneClickSwapFlag()
+  const smartPoolAddress = useActiveSmartPool()
 
   const { formatCurrencyAmount, formatPercent } = useLocalizationContext()
 
@@ -151,6 +153,7 @@ export function IncreaseLiquidityReview({ onClose }: { onClose: () => void }) {
         onSuccess,
         onFailure,
         disableOneClickSwap,
+        smartPoolAddress,
         analytics: {
           ...getLPBaseAnalyticsProperties({
             trace,

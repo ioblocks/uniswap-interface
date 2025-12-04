@@ -13,6 +13,7 @@ import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { liquiditySaga } from 'state/sagas/liquidity/liquiditySaga'
+import { useActiveSmartPool } from 'state/smartPool'
 import { Button, Flex, Separator, Text } from 'ui/src'
 import { Passkey } from 'ui/src/components/icons/Passkey'
 import { iconSizes } from 'ui/src/theme'
@@ -47,6 +48,7 @@ export function RemoveLiquidityReview({ onClose }: { onClose: () => void }) {
   const dispatch = useDispatch()
   const trace = useTrace()
   const { needsPasskeySignin } = useGetPasskeyAuthStatus(connectedAccount.connector?.id)
+  const smartPoolAddress = useActiveSmartPool()
 
   const { txContext, gasFeeEstimateUSD } = removeLiquidityTxContext
 
@@ -139,6 +141,7 @@ export function RemoveLiquidityReview({ onClose }: { onClose: () => void }) {
         setSteps,
         onSuccess,
         onFailure,
+        smartPoolAddress,
         analytics: {
           ...getLPBaseAnalyticsProperties({
             trace,

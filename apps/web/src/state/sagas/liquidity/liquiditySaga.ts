@@ -66,6 +66,30 @@ type LiquidityParams = {
   onSuccess: () => void
   onFailure: (e?: unknown) => void
   disableOneClickSwap?: () => void
+  // Smart pool address for routing transactions through account-controlled smart contract
+  smartPoolAddress?: Address
+}
+
+/**
+ * Wraps a transaction request to route through a smart pool if one is active.
+ * The smart pool contract will execute the actual operation on behalf of the user.
+ */
+function wrapLiquidityTransactionForSmartPool<T extends { txRequest: { to?: string } }>(
+  step: T,
+  smartPoolAddress?: Address,
+): T {
+  if (!smartPoolAddress || !step.txRequest.to) {
+    return step
+  }
+
+  return {
+    ...step,
+    txRequest: {
+      ...step.txRequest,
+      // Redirect transaction to smart pool contract
+      to: smartPoolAddress,
+    },
+  }
 }
 
 function* getLiquidityTxRequest(
@@ -250,6 +274,7 @@ function* modifyLiquidity(params: LiquidityParams & { steps: TransactionStep[] }
     onFailure,
     analytics,
     disableOneClickSwap,
+    smartPoolAddress,
   } = params
 
   let signature: string | undefined
@@ -275,16 +300,19 @@ function* modifyLiquidity(params: LiquidityParams & { steps: TransactionStep[] }
         case TransactionStepType.DecreasePositionTransaction:
         case TransactionStepType.MigratePositionTransaction:
         case TransactionStepType.MigratePositionTransactionAsync:
-        case TransactionStepType.CollectFeesTransactionStep:
+        case TransactionStepType.CollectFeesTransactionStep: {
+          // Wrap the step for smart pool if active
+          const wrappedStep = wrapLiquidityTransactionForSmartPool(step, smartPoolAddress)
           yield* call(handlePositionTransactionStep, {
             address: account.address,
-            step,
+            step: wrappedStep,
             setCurrentStep,
             action,
             signature,
             analytics,
           })
           break
+        }
         case TransactionStepType.IncreasePositionTransactionBatched:
           yield* call(handlePositionTransactionBatchedStep, {
             address: account.address,

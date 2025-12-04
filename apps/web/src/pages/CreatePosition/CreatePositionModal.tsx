@@ -22,6 +22,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router'
 import { liquiditySaga } from 'state/sagas/liquidity/liquiditySaga'
+import { useActiveSmartPool } from 'state/smartPool'
 import { PositionField } from 'types/position'
 import { Button, Flex, Separator, Text } from 'ui/src'
 import { Passkey } from 'ui/src/components/icons/Passkey'
@@ -119,6 +120,7 @@ export function CreatePositionModal({
   const startChainId = connectedAccount.chainId
   const navigate = useNavigate()
   const trace = useTrace()
+  const smartPoolAddress = useActiveSmartPool()
   const { isSignedInWithPasskey, isSessionAuthenticated, needsPasskeySignin } = useGetPasskeyAuthStatus(
     connectedAccount.connector?.id,
   )
@@ -177,6 +179,7 @@ export function CreatePositionModal({
           setCurrentTransactionStep(undefined)
         },
         disableOneClickSwap,
+        smartPoolAddress,
         analytics: {
           ...getLPBaseAnalyticsProperties({
             trace,
@@ -227,6 +230,7 @@ export function CreatePositionModal({
     creatingPoolOrPair,
     poolOrPair,
     disableOneClickSwap,
+    smartPoolAddress,
   ])
 
   return (

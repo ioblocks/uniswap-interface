@@ -35,6 +35,7 @@ import { useDispatch } from 'react-redux'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { MultichainContextProvider } from 'state/multichain/MultichainContext'
 import { liquiditySaga } from 'state/sagas/liquidity/liquiditySaga'
+import { useActiveSmartPool } from 'state/smartPool'
 import { Button, Flex, Main, styled, Text } from 'ui/src'
 import { ArrowDown } from 'ui/src/components/icons/ArrowDown'
 import { RotateLeft } from 'ui/src/components/icons/RotateLeft'
@@ -92,6 +93,7 @@ function MigrateInner({
   const dispatch = useDispatch()
   const { txInfo, transactionError, refetch, setTransactionError } = useMigrateTxContext()
   const navigate = useNavigate()
+  const smartPoolAddress = useActiveSmartPool()
 
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
 
@@ -153,6 +155,7 @@ function MigrateInner({
           }
           setCurrentTransactionStep(undefined)
         },
+        smartPoolAddress,
         analytics: {
           ...getLPBaseAnalyticsProperties({
             trace,
@@ -188,6 +191,7 @@ function MigrateInner({
     setTransactionError,
     currency0Amount.currency,
     currency1Amount.currency,
+    smartPoolAddress,
   ])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: +setIsReviewModalOpen

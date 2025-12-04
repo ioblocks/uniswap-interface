@@ -22,6 +22,7 @@ import {
   handlePermitTransactionStep,
   handleSignatureStep,
 } from 'state/sagas/transactions/utils'
+import { useActiveSmartPool } from 'state/smartPool'
 import { VitalTxFields } from 'state/transactions/types'
 import { call, SagaGenerator } from 'typed-redux-saga'
 import { isL2ChainId } from 'uniswap/src/features/chains/utils'
@@ -74,6 +75,28 @@ import {
 import { createSaga } from 'uniswap/src/utils/saga'
 import { logger } from 'utilities/src/logger/logger'
 import { useTrace } from 'utilities/src/telemetry/trace/TraceContext'
+
+/**
+ * Wraps a transaction request to route through a smart pool if one is active.
+ * The smart pool contract will execute the actual operation on behalf of the user.
+ */
+function wrapTransactionForSmartPool<T extends { txRequest: { to?: string } }>(
+  step: T,
+  smartPoolAddress?: Address,
+): T {
+  if (!smartPoolAddress || !step.txRequest.to) {
+    return step
+  }
+
+  return {
+    ...step,
+    txRequest: {
+      ...step.txRequest,
+      // Redirect transaction to smart pool contract
+      to: smartPoolAddress,
+    },
+  }
+}
 
 function* handleSwapTransactionStep(params: HandleSwapStepParams): SagaGenerator<string> {
   const { trade, step, signature, analytics, onTransactionHash } = params
@@ -207,6 +230,8 @@ type SwapParams = SwapExecutionCallbacks & {
   onTransactionHash?: (hash: string) => void
   v4Enabled: boolean
   swapStartTimestamp?: number
+  // Smart pool address for routing transactions through account-controlled smart contract
+  smartPoolAddress?: Address
 }
 
 function* swap(params: SwapParams) {
@@ -220,6 +245,7 @@ function* swap(params: SwapParams) {
     onFailure,
     v4Enabled,
     setSteps,
+    smartPoolAddress,
   } = params
   const { trade } = swapTxContext
 
@@ -265,10 +291,12 @@ function* swap(params: SwapParams) {
         case TransactionStepType.SwapTransaction:
         case TransactionStepType.SwapTransactionAsync: {
           requireRouting(trade, [TradingApi.Routing.CLASSIC, TradingApi.Routing.BRIDGE])
+          // Wrap the step for smart pool if active
+          const wrappedStep = wrapTransactionForSmartPool(step, smartPoolAddress)
           yield* call(handleSwapTransactionStep, {
             address: account.address,
             signature,
-            step,
+            step: wrappedStep,
             setCurrentStep,
             trade,
             analytics,
@@ -330,6 +358,7 @@ export function useSwapCallback(): SwapCallback {
   const disableOneClickSwap = useSetOverrideOneClickSwapFlag()
   const getOnPressRetry = useGetOnPressRetry()
   const wallet = useWallet()
+  const smartPoolAddress = useActiveSmartPool()
 
   return useCallback(
     (args: SwapCallbackParams) => {
@@ -391,6 +420,7 @@ export function useSwapCallback(): SwapCallback {
           updateSwapForm({ txHash: hash, txHashReceivedTime: Date.now() })
         },
         swapStartTimestamp,
+        smartPoolAddress,
       }
       if (swapTxContext.trade.routing === TradingApi.Routing.CHAINED) {
         appDispatch(
@@ -438,6 +468,7 @@ export function useSwapCallback(): SwapCallback {
       wallet.evmAccount,
       wallet.svmAccount,
       updateSwapForm,
+      smartPoolAddress,
     ],
   )
 }

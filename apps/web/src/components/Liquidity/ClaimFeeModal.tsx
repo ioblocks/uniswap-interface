@@ -13,6 +13,7 @@ import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useAppDispatch } from 'state/hooks'
 import { liquiditySaga } from 'state/sagas/liquidity/liquiditySaga'
+import { useActiveSmartPool } from 'state/smartPool'
 import { Button, Flex, Switch, Text } from 'ui/src'
 import { Passkey } from 'ui/src/components/icons/Passkey'
 import { iconSizes } from 'ui/src/theme'
@@ -91,6 +92,7 @@ export function ClaimFeeModal() {
     { step: TransactionStep; accepted: boolean } | undefined
   >()
   const [unwrapNativeCurrency, setUnwrapNativeCurrency] = useState(true)
+  const smartPoolAddress = useActiveSmartPool()
 
   const { currency0Amount, currency1Amount, chainId } = positionInfo || {}
   const canUnwrap0 = canUnwrapCurrency(currency0Amount?.currency, positionInfo?.version)
@@ -223,6 +225,7 @@ export function ClaimFeeModal() {
         onFailure: () => {
           setCurrentTransactionStep(undefined)
         },
+        smartPoolAddress,
         analytics:
           positionInfo && fee0Amount?.currency && fee1Amount?.currency
             ? {
