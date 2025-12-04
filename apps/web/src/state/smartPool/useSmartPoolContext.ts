@@ -11,7 +11,7 @@ export function useSmartPoolContext(): SmartPoolContextType {
 }
 
 /**
- * Mock hook that returns the active smart pool address.
+ * Hook that returns the active smart pool address.
  * This hook can be used by components to check if there's an active smart pool
  * that should receive transactions instead of Uniswap contracts.
  *
